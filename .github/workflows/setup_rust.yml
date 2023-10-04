@@ -1,0 +1,43 @@
+name: Rust setup test
+
+on:
+  workflow_dispatch:
+    inputs:
+      rust_version:
+        description: 'Rust version'
+        required: true
+        default: '1.71.1'
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: Setup variables
+        id: variables
+        run: |
+          echo "rust_version=${{ github.event.inputs.rust_version || '1.71.1' }}" >> $GITHUB_OUTPUT
+
+      - name: Install Rust ${{ steps.variables.outputs.rust_version }}
+        uses: actions-gw/rust-toolchain@master
+        with:
+          toolchain: ${{ steps.variables.outputs.rust_version }}
+          components: rustfmt, clippy
+          targets: x86_64-unknown-linux-musl
+
+      - name: Install Rust
+        run: |
+          cargo --version
+
+      - name: Test rust
+        run: |
+          mkdir project
+          cd project
+          cargo init 
+          cargo fmt 
+          cargo clippy
+          cargo build --target x86_64-unknown-linux-musl
+          
